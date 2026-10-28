@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login — Auditoria Apuração Assistida CBS/IBS</title>
+    <style>
+        :root {
+            --bg: #0f172a;
+            --card: #ffffff;
+            --primary: #1e3a8a;
+            --accent: #0284c7;
+            --text: #1e293b;
+            --muted: #64748b;
+            --danger: #dc2626;
+            --success: #15803d;
+        }
+        * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+        body {
+            margin: 0; min-height: 100vh; display: flex; align-items: center; justify-content: center;
+            background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 100%); color: var(--text); padding: 20px;
+        }
+        .login-box {
+            background: var(--card); width: 100%; max-width: 460px; border-radius: 12px;
+            padding: 32px; box-shadow: 0 20px 40px rgba(0,0,0,0.35);
+        }
+        .badge {
+            display: inline-block; background: #e0f2fe; color: #0369a1; font-size: 12px;
+            font-weight: 700; padding: 4px 10px; border-radius: 999px; margin-bottom: 12px;
+        }
+        h1 { margin: 0 0 8px 0; font-size: 22px; color: var(--primary); }
+        p.sub { margin: 0 0 24px 0; font-size: 14px; color: var(--muted); line-height: 1.4; }
+        label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px; color: #334155; }
+        input {
+            width: 100%; padding: 10px 12px; border: 1px solid #cbd5e1; border-radius: 8px;
+            font-size: 14px; margin-bottom: 16px;
+        }
+        button {
+            width: 100%; padding: 12px; background: var(--primary); color: #fff; border: none;
+            border-radius: 8px; font-size: 15px; font-weight: 600; cursor: pointer;
+        }
+        button:hover { background: #1d4ed8; }
+        .alert-err { background: #fef2f2; color: var(--danger); border: 1px solid #fecaca; padding: 10px 12px; border-radius: 8px; font-size: 13px; margin-bottom: 16px; }
+        .alert-ok { background: #f0fdf4; color: var(--success); border: 1px solid #bbf7d0; padding: 10px 12px; border-radius: 8px; font-size: 13px; margin-bottom: 16px; }
+        .demo-box {
+            margin-top: 24px; padding: 14px; background: #f8fafc; border: 1px solid #e2e8f0;
+            border-radius: 8px; font-size: 12px; color: #475569; line-height: 1.5;
+        }
+        .credits { margin-top: 16px; text-align: center; font-size: 11px; color: #64748b; }
+    </style>
+</head>
+<body>
+    <div class="login-box">
+        <span class="badge">REFORMA TRIBUTÁRIA • API RFB CBS v2</span>
+        <h1>Auditoria de Apuração Assistida</h1>
+        <p class="sub">Ambiente Multi-Cliente para Escritório Contábil com Controle de Acesso Segregado (RBAC) e Cofre Criptografado.</p>
+
+        {% if erro %}
+        <div class="alert-err"><strong>Erro:</strong> {{ erro }}</div>
+        {% endif %}
+        {% if msg %}
+        <div class="alert-ok">{{ msg }}</div>
+        {% endif %}
+
+        <form method="post" action="/login">
+            <label for="email">E-mail Corporativo</label>
+            <input type="email" id="email" name="email" required placeholder="admin@escritorio.cnt.br">
+
+            <label for="password">Senha</label>
+            <input type="password" id="password" name="password" required placeholder="••••••••">
+
+            <button type="submit">Entrar no Sistema</button>
+        </form>
+
+        <div class="demo-box">
+            <strong>Contas Iniciais de Demonstração (Etapa 1):</strong><br>
+            • <strong>Perfil ADMIN (Credenciais/Certificados):</strong> <code>admin@escritorio.cnt.br</code> / <code>Admin@2026!</code><br>
+            • <strong>Perfil FISCAL (Operação/Auditoria):</strong> <code>fiscal@escritorio.cnt.br</code> / <code>Fiscal@2026!</code>
+        </div>
+        <div class="credits">
+            Arquitetura Técnica &amp; Orquestração Gemini • Documentação Auditável v1.0
+        </div>
+    </div>
+</body>
+</html>

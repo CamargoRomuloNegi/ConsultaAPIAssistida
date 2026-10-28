@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel Contábil — Apuração Assistida CBS (Etapa 1)</title>
+    <style>
+        :root {
+            --primary: #1e3a8a;
+            --bg: #f1f5f9;
+            --card: #ffffff;
+            --text: #0f172a;
+            --muted: #475569;
+            --border: #e2e8f0;
+        }
+        * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+        body { margin: 0; background: var(--bg); color: var(--text); }
+        header {
+            background: var(--primary); color: #fff; padding: 16px 28px;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        header h1 { margin: 0; font-size: 18px; }
+        header .user-bar { font-size: 13px; display: flex; gap: 14px; align-items: center; }
+        .role-pill {
+            background: #38bdf8; color: #0f172a; font-weight: 700; padding: 3px 10px;
+            border-radius: 999px; font-size: 11px;
+        }
+        .container { max-width: 1320px; margin: 24px auto; padding: 0 20px; }
+        .card {
+            background: var(--card); border: 1px solid var(--border); border-radius: 10px;
+            padding: 20px; margin-bottom: 22px; box-shadow: 0 2px 6px rgba(0,0,0,0.03);
+        }
+        .card h2 { margin-top: 0; font-size: 16px; color: var(--primary); border-bottom: 1px solid var(--border); padding-bottom: 10px; }
+        table { width: 100%; border-collapse: collapse; font-size: 13px; }
+        th, td { text-align: left; padding: 10px 8px; border-bottom: 1px solid var(--border); vertical-align: top; }
+        th { background: #f8fafc; color: #334155; font-weight: 600; }
+        .sem-VERDE { background: #dcfce7; color: #166534; padding: 4px 8px; border-radius: 6px; font-weight: 600; font-size: 12px; display: inline-block; }
+        .sem-AMARELO { background: #fef9c3; color: #854d0e; padding: 4px 8px; border-radius: 6px; font-weight: 600; font-size: 12px; display: inline-block; }
+        .sem-VERMELHO_HIATO { background: #fee2e2; color: #991b1b; padding: 4px 8px; border-radius: 6px; font-weight: 600; font-size: 12px; display: inline-block; }
+        .sem-AZUL_INICIAL { background: #e0f2fe; color: #075985; padding: 4px 8px; border-radius: 6px; font-weight: 600; font-size: 12px; display: inline-block; }
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        label { display: block; font-size: 12px; font-weight: 600; margin-bottom: 4px; color: #334155; }
+        input, select {
+            width: 100%; padding: 8px 10px; border: 1px solid #cbd5e1; border-radius: 6px;
+            font-size: 13px; margin-bottom: 12px;
+        }
+        button {
+            background: var(--primary); color: #fff; border: none; padding: 9px 16px;
+            border-radius: 6px; font-weight: 600; font-size: 13px; cursor: pointer;
+        }
+        .alert-ok { background: #dcfce7; color: #166534; padding: 12px 16px; border-radius: 8px; margin-bottom: 18px; font-size: 13px; }
+        .alert-err { background: #fee2e2; color: #991b1b; padding: 12px 16px; border-radius: 8px; margin-bottom: 18px; font-size: 13px; }
+        .locked-banner {
+            background: #fffbeb; border: 1px solid #fde68a; color: #92400e; padding: 14px;
+            border-radius: 8px; font-size: 13px;
+        }
+        footer { text-align: center; padding: 20px; font-size: 12px; color: var(--muted); }
+    </style>
+</head>
+<body>
+    <header>
+        <div>
+            <h1>Escritório Contábil — Auditoria Apuração Assistida CBS (Etapa 1: Fundação &amp; Segurança)</h1>
+        </div>
+        <div class="user-bar">
+            <span>Usuário: <strong>{{ user.nome }}</strong> ({{ user.email }})</span>
+            <span class="role-pill">PERFIL: {{ user.role }}</span>
+            <a href="/logout" style="color: #bae6fd; text-decoration: none; font-weight: 600;">Sair</a>
+        </div>
+    </header>
+
+    <div class="container">
+        {% if msg %}
+        <div class="alert-ok"><strong>Sucesso:</strong> {{ msg }}</div>
+        {% endif %}
+        {% if erro %}
+        <div class="alert-err"><strong>Atenção:</strong> {{ erro }}</div>
+        {% endif %}
+
+        <!-- 1. CARTEIRA DE CLIENTES E SEMÁFORO DE 8 DIAS DA RECEITA FEDERAL -->
+        <div class="card">
+            <h2>1. Carteira de Clientes (Matriz 8 dígitos / Filiais 14 dígitos) e Semáforo da Janela de 8 Dias (RFB)</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>CNPJ Base (Matriz 8 díg.)</th>
+                        <th>Razão Social &amp; Estabelecimentos (14 díg.)</th>
+                        <th>Status Cofre (OAuth2 / Certificado A1)</th>
+                        <th>Semáforo da Janela Incremental de 8 Dias (RFB)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for c in clients %}
+                    <tr>
+                        <td>
+                            <strong><code>{{ c.cnpj_base }}</code></strong><br>
+                            <small style="color: #64748b;">Matriz: {{ c.cnpj_matriz_completo }}</small>
+                        </td>
+                        <td>
+                            <strong>{{ c.razao_social }}</strong><br>
+                            <small style="color: #475569;">
+                                Filiais vinculadas ({{ c.branches|length }}):
+                                {% for b in c.branches %}
+                                    <code>{{ b.cnpj_completo }}</code> ({{ b.uf }}){% if not loop.last %}, {% endif %}
+                                {% endfor %}
+                            </small>
+                        </td>
+                        <td>
+                            {% if c.has_credentials %}
+                                <span style="color: #15803d; font-weight: 600;">✔ Credencial Criptografada ({{ c.cred_ambiente }})</span><br>
+                                <small>Client ID: <code>{{ c.cred_client_id }}</code> | Secret: <code>***[PROTEGIDO]***</code></small><br>
+                                {% if c.has_certificate %}
+                                    <small style="color: #0369a1;">🔒 Cert A1: {{ c.cert_file_name }} (Vence: {{ c.cert_valid_until[:10] }})</small>
+                                {% else %}
+                                    <small style="color: #64748b;">Certificado A1 opcional não anexado</small>
+                                {% endif %}
+                            {% else %}
+                                <span style="color: #dc2626; font-weight: 600;">✖ Pendente de Configuração pelo ADMIN</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <span class="sem-{{ c.semaforo.status_code }}">{{ c.semaforo.badge_label }}</span><br>
+                            <small style="color: #475569;">{{ c.semaforo.explicacao_regra_rfb }}</small>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- 2. CADASTRO DE CLIENTES E FILIAIS -->
+        <div class="grid-2">
+            <div class="card">
+                <h2>2. Cadastrar Novo Cliente (Estabelecimento Matriz)</h2>
+                <form method="post" action="/clientes/novo">
+                    <label>CNPJ Completo da Matriz (14 dígitos — a raiz de 8 dígitos será extraída automaticamente)</label>
+                    <input type="text" name="cnpj_matriz_completo" required placeholder="00.000.000/0001-00">
+                    <label>Razão Social</label>
+                    <input type="text" name="razao_social" required placeholder="EXEMPLO COMÉRCIO E SERVIÇOS LTDA">
+                    <div class="grid-2">
+                        <div>
+                            <label>UF da Matriz</label>
+                            <input type="text" name="uf_matriz" value="SP" maxlength="2" required>
+                        </div>
+                        <div>
+                            <label>Município</label>
+                            <input type="text" name="municipio_matriz" value="São Paulo" required>
+                        </div>
+                    </div>
+                    <button type="submit">Cadastrar Cliente Matriz</button>
+                </form>
+            </div>
+
+            <div class="card">
+                <h2>3. Vincular Filial (14 dígitos) à Raiz da Matriz (8 dígitos)</h2>
+                <form method="post" action="/clientes/filial">
+                    <label>Selecione o Cliente Matriz (Raiz 8 dígitos)</label>
+                    <select name="client_id" required>
+                        {% for c in clients %}
+                        <option value="{{ c.id }}">{{ c.cnpj_base }} — {{ c.razao_social }}</option>
+                        {% endfor %}
+                    </select>
+                    <label>CNPJ Completo da Filial (14 dígitos — deve iniciar com os mesmos 8 dígitos da matriz)</label>
+                    <input type="text" name="cnpj_completo" required placeholder="00.409.834/0003-40">
+                    <label>Nome Fantasia / Identificação da Filial</label>
+                    <input type="text" name="nome_fantasia" required placeholder="Filial Ribeirão Preto">
+                    <div class="grid-2">
+                        <div>
+                            <label>UF</label>
+                            <input type="text" name="uf" value="SP" maxlength="2" required>
+                        </div>
+                        <div>
+                            <label>Município</label>
+                            <input type="text" name="municipio" value="Ribeirão Preto" required>
+                        </div>
+                    </div>
+                    <button type="submit">Vincular Filial</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- 3. COFRE DE CREDENCIAIS E CERTIFICADOS (EXCLUSIVO ADMIN) -->
+        <div class="card">
+            <h2>4. Cofre Criptografado de Credenciais (Receita Integra OAuth2) e Certificado Digital ICP-Brasil (A1)</h2>
+            {% if user.role == 'ADMIN' %}
+            <form method="post" action="/admin/credenciais" enctype="multipart/form-data">
+                <div class="grid-2">
+                    <div>
+                        <label>Cliente (CNPJ Básico Matriz)</label>
+                        <select name="client_id" required>
+                            {% for c in clients %}
+                            <option value="{{ c.id }}">{{ c.cnpj_base }} — {{ c.razao_social }}</option>
+                            {% endfor %}
+                        </select>
+                        <label>Ambiente da API Receita Federal</label>
+                        <select name="ambiente">
+                            <option value="PRODUCAO">PRODUÇÃO / BETA (/apuracao-cbs/v2)</option>
+                            <option value="PRR">PRODUÇÃO RESTRITA - PILOTO (/apuracao-cbs-prr/v2)</option>
+                        </select>
+                        <label>OAuth2 Client ID (Gerado no Portal Consumo Tributos / Receita Integra)</label>
+                        <input type="text" name="oauth_client_id" required placeholder="client-id-receita-integra">
+                        <label>OAuth2 Client Secret (Será criptografado via AES-Fernet antes de gravar)</label>
+                        <input type="password" name="oauth_client_secret" required placeholder="••••••••••••">
+                    </div>
+                    <div>
+                        <label>URL de Retorno Webhook (Opcional — deixe vazio para Modo Polling sem abrir Firewall)</label>
+                        <input type="text" name="webhook_url_retorno" placeholder="Deixe em branco para Polling (Recomendado)">
+                        <label>Certificado Digital e-CNPJ A1 (.pfx / .p12) — Opcional para mTLS</label>
+                        <input type="file" name="pfx_file" accept=".pfx,.p12">
+                        <label>Senha do Certificado Digital (.pfx)</label>
+                        <input type="password" name="pfx_password" placeholder="Senha do arquivo .pfx">
+                        <button type="submit" style="margin-top: 8px;">Salvar e Criptografar no Cofre</button>
+                    </div>
+                </div>
+            </form>
+            {% else %}
+            <div class="locked-banner">
+                <strong>🔒 Acesso Segregado (RBAC Ativo):</strong> Você está conectado com o perfil <code>FISCAL</code>.
+                A visualização e alteração de chaves OAuth2 (<code>client_id</code> / <code>client_secret</code>) e certificados digitais A1 são exclusivas do perfil <code>ADMIN</code>.
+                Você pode operar normalmente as consultas e conciliações dos clientes já configurados.
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- 4. DIAGNÓSTICO DE REDE E SEGURANÇA -->
+        <div class="card">
+            <h2>5. Painel de Governança de Rede, TLS e Blindagem de Logs</h2>
+            <table>
+                <tbody>
+                    <tr>
+                        <th style="width: 280px;">Modo de Operação de Rede Padrão</th>
+                        <td><strong>{{ diagnostics.operation_mode_default }}</strong></td>
+                    </tr>
+                    <tr>
+                        <th>Motor Criptográfico TLS / SSL</th>
+                        <td><code>{{ diagnostics.openssl_version }}</code> | Versão Mínima Exigida: <code>{{ diagnostics.tls_min_version }}</code> ({{ diagnostics.cert_verification }})</td>
+                    </tr>
+                    <tr>
+                        <th>Allowlist de IP do Webhook (RFB)</th>
+                        <td>
+                            Faixa Oficial Produção: <code>{{ diagnostics.webhook_ip_allowlist_prod | join(', ') }}</code> |
+                            Teste IP RFB (<code>189.9.61.23</code>): <strong>{{ 'AUTORIZADO' if diagnostics.webhook_ip_validation_test.ip_oficial_rfb_189_9_61_23 else 'FALHA' }}</strong> |
+                            Teste IP Externo (<code>8.8.8.8</code>): <strong>{{ 'BLOQUEADO (OK)' if not diagnostics.webhook_ip_validation_test.ip_externo_nao_autorizado_8_8_8_8 else 'FALHA' }}</strong>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Filtro Anti-Vazamento (Bearer &amp; urlAssinada S3)</th>
+                        <td>
+                            Status: <strong>{{ 'ATIVO' if diagnostics.log_sanitization_active else 'INATIVO' }}</strong><br>
+                            <small style="color: #475569;">Exemplo de sanitização em tempo real: <code>{{ diagnostics.log_sanitization_demo }}</code></small>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- 5. TRILHA DE AUDITORIA -->
+        <div class="card">
+            <h2>6. Trilha de Auditoria Imutável (Últimos Eventos)</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Data/Hora (UTC)</th>
+                        <th>Usuário</th>
+                        <th>Perfil</th>
+                        <th>Ação</th>
+                        <th>Alvo</th>
+                        <th>Detalhes (Sanitizados)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for log in audit_logs %}
+                    <tr>
+                        <td><code>{{ log.timestamp_utc[:19] }}</code></td>
+                        <td>{{ log.user_email }}</td>
+                        <td><code>{{ log.user_role }}</code></td>
+                        <td><strong>{{ log.action }}</strong></td>
+                        <td><code>{{ log.target_entity }}</code></td>
+                        <td>{{ log.details_masked }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <footer>
+        Projeto Apuração Assistida CBS/IBS • <strong>Arquiteto Técnico</strong> &amp; <strong>Orquestrador Técnico Gemini</strong> • Etapa 1 Concluída
+    </footer>
+</body>
+</html>
